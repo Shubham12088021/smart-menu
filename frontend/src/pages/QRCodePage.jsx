@@ -19,9 +19,10 @@ export default function QRCodePage() {
   if (!restaurant) return null;
 
   const apiBase = import.meta.env.VITE_API_URL || '';
-  const menuUrl = `${window.location.origin}/menu/${restaurant.slug}`;
-  const qrImageUrl = `${apiBase}/api/qr/image/${restaurant.slug}`;
-  const qrDownloadUrl = `${apiBase}/api/qr/download/${restaurant.slug}`;
+  const currentOrigin = window.location.origin;
+  const menuUrl = `${currentOrigin}/menu/${restaurant.slug}`;
+  const qrImageUrl = `${apiBase}/api/qr/image/${restaurant.slug}?frontend_url=${encodeURIComponent(currentOrigin)}`;
+  const qrDownloadUrl = `${apiBase}/api/qr/download/${restaurant.slug}?frontend_url=${encodeURIComponent(currentOrigin)}`;
 
   const copyUrl = () => {
     navigator.clipboard.writeText(menuUrl);
@@ -36,7 +37,7 @@ export default function QRCodePage() {
         <body style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; font-family:sans-serif;">
           <h1 style="margin-bottom:8px;">${restaurant.name}</h1>
           <p style="color:#666; margin-bottom:24px;">Scan to view our digital menu</p>
-          <img src="${window.location.origin}${qrImageUrl}" style="width:300px; height:300px;" />
+          <img src="${qrImageUrl}" style="width:300px; height:300px;" />
           <p style="color:#999; margin-top:16px; font-size:12px;">${menuUrl}</p>
         </body>
       </html>
