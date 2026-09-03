@@ -36,10 +36,44 @@ app.add_middleware(
 
 # ── Static Files (uploads) ───────────────────────────────────
 
+from fastapi.responses import FileResponse
+from fastapi import HTTPException
+
 uploads_dir = Path(__file__).parent.parent / "uploads"
 uploads_dir.mkdir(exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
 app.mount("/api/uploads", StaticFiles(directory=str(uploads_dir)), name="api_uploads")
+
+
+@app.get("/uploads/{file_path:path}")
+@app.get("/api/uploads/{file_path:path}")
+async def serve_uploaded_image(file_path: str):
+    """Explicitly serve uploaded images with case-insensitive resolution for Linux."""
+    clean_path = file_path.strip("/")
+    direct = uploads_dir / clean_path
+    if direct.exists() and direct.is_file():
+        return FileResponse(str(direct))
+
+    # Case-insensitive resolution
+    try:
+        parts = Path(clean_path).parts
+        current = uploads_dir
+        for part in parts:
+            found = False
+            if current.exists() and current.is_dir():
+                for entry in current.iterdir():
+                    if entry.name.lower() == part.lower():
+                        current = entry
+                        found = True
+                        break
+            if not found:
+                current = current / part
+        if current.exists() and current.is_file():
+            return FileResponse(str(current))
+    except Exception:
+        pass
+
+    raise HTTPException(status_code=404, detail="Image not found")
 
 # ── Register API Routes ──────────────────────────────────────
 
