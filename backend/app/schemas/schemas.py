@@ -183,10 +183,10 @@ class OrderCreate(BaseModel):
 
 class OrderItemResponse(BaseModel):
     id: int
-    menu_item_id: int
-    item_name: str
-    quantity: int
-    price: float
+    menu_item_id: Optional[int] = None
+    item_name: Optional[str] = "Item"
+    quantity: Optional[int] = 1
+    price: Optional[float] = 0.0
 
     class Config:
         from_attributes = True
@@ -197,8 +197,8 @@ class OrderResponse(BaseModel):
     restaurant_id: int
     customer_name: Optional[str] = "Guest"
     table_number: Optional[str] = ""
-    total: float
-    status: str
+    total: Optional[float] = 0.0
+    status: Optional[str] = "pending"
     payment_method: Optional[str] = "cash"
     payment_status: Optional[str] = "pending"
     razorpay_order_id: Optional[str] = ""
