@@ -1,8 +1,10 @@
 import axios from 'axios';
 
-// In production, VITE_API_URL points to the deployed backend
-const rawUrl = import.meta.env.VITE_API_URL || 'https://smart-menu-backend-8ncq.onrender.com';
-const API_BASE = rawUrl.replace(/\/api\/?$/, '').replace(/\/$/, '') + '/api';
+// In production, VITE_API_URL points to the deployed backend (e.g. https://smart-menu-api.onrender.com)
+// In local dev, falls back to '/api' which Vite proxies to localhost:8000
+const API_BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : '/api';
 
 // Create axios instance with base configuration
 const api = axios.create({

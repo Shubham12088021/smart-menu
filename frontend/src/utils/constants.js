@@ -99,9 +99,7 @@ export const getImageUrl = (path) => {
   ) {
     return path;
   }
-  let apiBase = import.meta.env.VITE_API_URL || 'https://smart-menu-backend-8ncq.onrender.com';
-  // Strip trailing /api or slash to prevent double /api/uploads
-  apiBase = apiBase.replace(/\/api\/?$/, '').replace(/\/$/, '');
+  const apiBase = import.meta.env.VITE_API_URL || '';
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   return `${apiBase}${cleanPath}`;
 };
