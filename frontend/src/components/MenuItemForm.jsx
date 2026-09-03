@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Upload, Sparkles, Loader2 } from 'lucide-react';
 import { aiService } from '../services/ai';
+import Image3D from './Image3D';
 import toast from 'react-hot-toast';
 
 export default function MenuItemForm({ isOpen, onClose, onSubmit, item, categories }) {
@@ -224,11 +225,18 @@ export default function MenuItemForm({ isOpen, onClose, onSubmit, item, categori
             <label className="input-label">Food Image</label>
             <div className="flex items-center gap-4">
               {imagePreview && (
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-20 h-20 object-cover rounded-xl border border-gray-200 dark:border-gray-700"
-                />
+                <div className="w-20 h-20 rounded-xl border border-gray-200 dark:border-gray-700 overflow-visible">
+                  <Image3D
+                    src={imagePreview}
+                    alt="Preview"
+                    className="rounded-xl"
+                    maxTilt={20}
+                    scale={1.1}
+                    speed={300}
+                    perspective={500}
+                    zoomable={false}
+                  />
+                </div>
               )}
               <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:border-primary-400 transition-colors">
                 <Upload className="w-5 h-5 text-gray-400" />

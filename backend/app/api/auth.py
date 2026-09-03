@@ -69,10 +69,22 @@ def register(data: UserRegister, db: Session = Depends(get_db)):
         user_id=user.id,
         name=f"{data.full_name or data.username}'s Restaurant",
         slug=slug,
+        template="modern",
+        primary_color="#f97316",
+        accent_color="#ea580c",
+        font_family="Inter",
+        layout_style="comfortable",
+        is_published=True,
     )
 
     db.add(restaurant)
     db.commit()
+    db.refresh(restaurant)
+
+    # Initialize default categories
+    from app.utils.restaurant import init_default_categories
+    init_default_categories(restaurant.id, db)
+
     db.refresh(user)
 
     # Generate token

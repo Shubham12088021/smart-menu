@@ -116,6 +116,10 @@ class Order(Base):
     table_number = Column(String(20), default="")
     total = Column(Float, default=0.0)
     status = Column(String(20), default="pending")  # pending, preparing, ready, completed, cancelled
+    payment_method = Column(String(20), default="cash")  # online, cash
+    payment_status = Column(String(20), default="pending")  # pending, paid, failed
+    razorpay_order_id = Column(String(100), default="")
+    razorpay_payment_id = Column(String(100), default="")
     notes = Column(Text, default="")
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

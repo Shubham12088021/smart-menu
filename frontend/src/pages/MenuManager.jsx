@@ -79,25 +79,39 @@ export default function MenuManager() {
     try {
       const item = await menuService.createItem(data);
       if (imageFile) {
-        await menuService.uploadItemImage(item.id, imageFile);
+        try {
+          await menuService.uploadItemImage(item.id, imageFile);
+        } catch (imgErr) {
+          toast.error(imgErr.response?.data?.detail || 'Item created, but image upload failed');
+        }
       }
-      toast.success('Item added!');
+      toast.success('Item added successfully!');
       setShowItemForm(false);
       loadData();
-    } catch { toast.error('Failed to add item'); }
+    } catch (err) {
+      console.error('Failed to add item:', err);
+      toast.error(err.response?.data?.detail || 'Failed to add item');
+    }
   };
 
   const handleUpdateItem = async (data, imageFile) => {
     try {
       await menuService.updateItem(editingItem.id, data);
       if (imageFile) {
-        await menuService.uploadItemImage(editingItem.id, imageFile);
+        try {
+          await menuService.uploadItemImage(editingItem.id, imageFile);
+        } catch (imgErr) {
+          toast.error(imgErr.response?.data?.detail || 'Item updated, but image upload failed');
+        }
       }
-      toast.success('Item updated!');
+      toast.success('Item updated successfully!');
       setShowItemForm(false);
       setEditingItem(null);
       loadData();
-    } catch { toast.error('Failed to update item'); }
+    } catch (err) {
+      console.error('Failed to update item:', err);
+      toast.error(err.response?.data?.detail || 'Failed to update item');
+    }
   };
 
   const handleDeleteItem = async () => {

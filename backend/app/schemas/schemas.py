@@ -173,6 +173,11 @@ class OrderCreate(BaseModel):
     customer_name: str = "Guest"
     table_number: str = ""
     notes: str = ""
+    payment_method: str = "cash"  # "online" or "cash"
+    payment_status: str = "pending"  # "pending", "paid", "failed"
+    razorpay_order_id: Optional[str] = ""
+    razorpay_payment_id: Optional[str] = ""
+    razorpay_signature: Optional[str] = ""
     items: List[OrderItemCreate]
 
 
@@ -194,6 +199,10 @@ class OrderResponse(BaseModel):
     table_number: str
     total: float
     status: str
+    payment_method: Optional[str] = "cash"
+    payment_status: Optional[str] = "pending"
+    razorpay_order_id: Optional[str] = ""
+    razorpay_payment_id: Optional[str] = ""
     notes: str
     created_at: Optional[datetime] = None
     items: List[OrderItemResponse] = []
@@ -204,6 +213,22 @@ class OrderResponse(BaseModel):
 
 class OrderStatusUpdate(BaseModel):
     status: str = Field(..., pattern="^(pending|preparing|ready|completed|cancelled)$")
+
+
+class RazorpayCreateOrderRequest(BaseModel):
+    amount: float = Field(..., gt=0)
+    currency: str = "INR"
+    restaurant_slug: str
+    receipt: Optional[str] = None
+
+
+class RazorpayCreateOrderResponse(BaseModel):
+    order_id: str
+    amount: int  # in paise
+    currency: str
+    key_id: str
+    restaurant_name: str
+
 
 
 # ── AI Schemas ────────────────────────────────────────────────

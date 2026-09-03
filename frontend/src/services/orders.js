@@ -1,6 +1,11 @@
 import api from './api';
 
 export const orderService = {
+  async createRazorpayOrder(data) {
+    const response = await api.post('/orders/razorpay/create-order', data);
+    return response.data;
+  },
+
   async placeOrder(data) {
     const response = await api.post('/orders', data);
     return response.data;

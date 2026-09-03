@@ -18,9 +18,10 @@ export default function QRCodePage() {
   if (loading) return <LoadingSpinner text="Loading..." />;
   if (!restaurant) return null;
 
+  const apiBase = import.meta.env.VITE_API_URL || '';
   const menuUrl = `${window.location.origin}/menu/${restaurant.slug}`;
-  const qrImageUrl = `/api/qr/image/${restaurant.slug}`;
-  const qrDownloadUrl = `/api/qr/download/${restaurant.slug}`;
+  const qrImageUrl = `${apiBase}/api/qr/image/${restaurant.slug}`;
+  const qrDownloadUrl = `${apiBase}/api/qr/download/${restaurant.slug}`;
 
   const copyUrl = () => {
     navigator.clipboard.writeText(menuUrl);

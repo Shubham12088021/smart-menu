@@ -2,6 +2,7 @@ import { Edit2, Trash2, Copy, GripVertical, Star, Flame } from 'lucide-react';
 import { formatPrice } from '../utils/constants';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import Image3D from './Image3D';
 
 export default function MenuItemCard({ item, onEdit, onDelete, onDuplicate, dragEnabled = true }) {
   const {
@@ -37,14 +38,23 @@ export default function MenuItemCard({ item, onEdit, onDelete, onDuplicate, drag
       )}
 
       {/* Image */}
-      <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-800">
-        {item.image ? (
-          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-2xl">
-            🍽️
-          </div>
-        )}
+      <div className="w-16 h-16 rounded-xl overflow-visible flex-shrink-0 bg-gray-100 dark:bg-gray-800">
+        <Image3D
+          src={item.image}
+          alt={item.name}
+          item={item}
+          className="rounded-xl"
+          maxTilt={20}
+          scale={1.08}
+          speed={300}
+          perspective={600}
+          itemName={item.name}
+          fallback={
+            <div className="w-full h-full flex items-center justify-center text-2xl rounded-xl bg-gray-100 dark:bg-gray-800">
+              🍽️
+            </div>
+          }
+        />
       </div>
 
       {/* Info */}

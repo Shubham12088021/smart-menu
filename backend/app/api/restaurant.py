@@ -11,16 +11,9 @@ from app.models.models import User, Restaurant
 from app.schemas.schemas import RestaurantUpdate, RestaurantResponse
 from app.utils.auth import get_current_user
 from app.utils.files import save_upload, delete_upload
+from app.utils.restaurant import get_user_restaurant
 
 router = APIRouter(prefix="/api/restaurant", tags=["Restaurant"])
-
-
-def get_user_restaurant(user: User, db: Session) -> Restaurant:
-    """Get the restaurant belonging to the current user."""
-    restaurant = db.query(Restaurant).filter(Restaurant.user_id == user.id).first()
-    if not restaurant:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
-    return restaurant
 
 
 @router.get("", response_model=RestaurantResponse)

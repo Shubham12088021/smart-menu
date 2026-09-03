@@ -18,15 +18,22 @@ export default function OrderCard({ order, onUpdateStatus }) {
               {statusConfig.name}
             </span>
           </div>
-          <div className="flex items-center gap-3 mt-1.5">
+          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
             <span className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
               <User className="w-3.5 h-3.5" /> {order.customer_name}
             </span>
             {order.table_number && (
-              <span className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
-                <Hash className="w-3.5 h-3.5" /> {order.table_number}
+              <span className="flex items-center gap-1 text-sm font-semibold text-gray-800 dark:text-gray-200">
+                <Hash className="w-3.5 h-3.5 text-primary-500" /> Table {order.table_number}
               </span>
             )}
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              order.payment_status === 'paid'
+                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25'
+                : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25'
+            }`}>
+              {order.payment_status === 'paid' ? '💳 Paid Online' : '💵 Pay Cash'}
+            </span>
           </div>
         </div>
         <div className="text-right">
@@ -38,6 +45,12 @@ export default function OrderCard({ order, onUpdateStatus }) {
           </p>
         </div>
       </div>
+
+      {order.notes && (
+        <div className="text-xs bg-amber-500/10 text-amber-700 dark:text-amber-300 p-2 rounded-xl mb-3 border border-amber-500/20">
+          📝 <strong>Note:</strong> {order.notes}
+        </div>
+      )}
 
       {/* Items */}
       <div className="border-t border-gray-100 dark:border-gray-800 pt-3 mb-3">

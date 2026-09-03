@@ -15,17 +15,11 @@ from app.database.database import get_db
 from app.models.models import User, Restaurant
 from app.schemas.schemas import QRGenerateRequest
 from app.utils.auth import get_current_user
+from app.utils.restaurant import get_user_restaurant
 
 router = APIRouter(prefix="/api/qr", tags=["QR Code"])
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
-
-
-def get_user_restaurant(user: User, db: Session) -> Restaurant:
-    restaurant = db.query(Restaurant).filter(Restaurant.user_id == user.id).first()
-    if not restaurant:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
-    return restaurant
 
 
 def generate_qr_image(url: str) -> io.BytesIO:
