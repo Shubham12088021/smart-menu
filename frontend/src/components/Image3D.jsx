@@ -11,7 +11,7 @@ import {
   Minus,
   Info
 } from 'lucide-react';
-import { formatPrice } from '../utils/constants';
+import { formatPrice, getImageUrl } from '../utils/constants';
 
 /**
  * Image3D - Grand Interactive 3D Dish Showcase Modal
@@ -34,6 +34,10 @@ export default function Image3D({
   onAddToCart = null,
 }) {
   const containerRef = useRef(null);
+  const [imgError, setImgError] = useState(false);
+
+  // Resolve absolute backend URL if relative path
+  const finalSrc = getImageUrl(src);
 
   // Thumbnail hover states
   const [transform, setTransform] = useState('');
@@ -351,59 +355,51 @@ export default function Image3D({
             </div>
           </div>
 
-          {/* Bottom Toolbar Controls */}
-          <div className="dish-3d-window-footer">
-            <div className="flex items-center gap-2.5 flex-wrap justify-center">
-              {/* Auto Orbit Toggle */}
+          {/* ── Floating Controls HUD ────────────────────── */}
+          <div className="dish-3d-hud animate-slide-up">
+            <div className="flex items-center gap-2">
+              {/* Auto-Rotate Toggle */}
               <button
                 onClick={() => setIsAutoRotate(!isAutoRotate)}
                 className={`dish-3d-control-btn ${isAutoRotate ? 'active' : ''}`}
-                title="Toggle continuous 3D rotation"
+                title="Toggle Auto 360° Spin"
               >
                 <Rotate3d className="w-4 h-4" />
-                <span>{isAutoRotate ? '360° Auto Spin' : 'Start Auto Spin'}</span>
+                <span>{isAutoRotate ? 'Auto Spin: ON' : 'Auto Spin: OFF'}</span>
               </button>
 
-              {/* Flip Card */}
+              {/* Flip Recipe Card */}
               <button
                 onClick={() => setIsFlipped(!isFlipped)}
                 className={`dish-3d-control-btn ${isFlipped ? 'active' : ''}`}
-                title="Flip to dish info"
+                title="Flip to see details"
               >
                 <Info className="w-4 h-4" />
-                <span>{isFlipped ? 'Show 3D View' : 'Dish Details'}</span>
+                <span>{isFlipped ? 'Show Front' : 'Dish Info'}</span>
               </button>
+            </div>
 
+            <div className="flex items-center gap-2">
               {/* Zoom Controls */}
-              <div className="flex items-center gap-1 bg-white/10 p-1 rounded-xl border border-white/10">
+              <div className="flex items-center bg-white/10 rounded-2xl p-1 border border-white/15">
                 <button
-                  onClick={() => setZoomLevel(prev => Math.max(0.8, prev - 0.15))}
-                  className="dish-3d-icon-btn"
+                  onClick={() => setZoomLevel(prev => Math.max(0.7, prev - 0.15))}
+                  className="p-1.5 hover:bg-white/20 rounded-xl transition-colors text-white"
                   title="Zoom Out"
                 >
                   <Minus className="w-3.5 h-3.5" />
                 </button>
-                <span className="text-[11px] font-bold text-gray-300 px-1.5">
+                <span className="text-[11px] font-bold text-white px-2">
                   {Math.round(zoomLevel * 100)}%
                 </span>
                 <button
-                  onClick={() => setZoomLevel(prev => Math.min(1.4, prev + 0.15))}
-                  className="dish-3d-icon-btn"
+                  onClick={() => setZoomLevel(prev => Math.min(1.8, prev + 0.15))}
+                  className="p-1.5 hover:bg-white/20 rounded-xl transition-colors text-white"
                   title="Zoom In"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
               </div>
-
-              {/* Reset Angle */}
-              <button
-                onClick={reset3D}
-                className="dish-3d-control-btn"
-                title="Reset 3D camera"
-              >
-                <RotateCcw className="w-4 h-4" />
-                <span>Reset</span>
-              </button>
             </div>
           </div>
         </div>
@@ -411,6 +407,10 @@ export default function Image3D({
       document.body
     )
   ) : null;
+
+  if ((!src || imgError) && fallback) {
+    return fallback;
+  }
 
   return (
     <>
@@ -433,10 +433,11 @@ export default function Image3D({
           }}
         >
           <img
-            src={src}
+            src={finalSrc}
             alt={alt}
             className={`image-3d-img ${imgClassName}`}
             draggable={false}
+            onError={() => setImgError(true)}
           />
 
           {glare && (

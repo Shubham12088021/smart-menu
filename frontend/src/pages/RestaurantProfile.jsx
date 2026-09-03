@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Save, Upload, Loader2, Store } from 'lucide-react';
 import { restaurantService } from '../services/restaurant';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { getImageUrl } from '../utils/constants';
 import toast from 'react-hot-toast';
 
 export default function RestaurantProfile() {
@@ -74,7 +75,7 @@ export default function RestaurantProfile() {
         <div className="flex items-center gap-6">
           <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600">
             {form.logo ? (
-              <img src={form.logo} alt="Logo" className="w-full h-full object-cover" />
+              <img src={getImageUrl(form.logo)} alt="Logo" className="w-full h-full object-cover" />
             ) : (
               <Store className="w-10 h-10 text-gray-400" />
             )}

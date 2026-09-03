@@ -86,3 +86,21 @@ export const formatDate = (dateString) => {
     minute: '2-digit',
   });
 };
+
+// ── Image URL Resolver ───────────────────────────────────────
+
+export const getImageUrl = (path) => {
+  if (!path) return '';
+  if (
+    path.startsWith('http://') ||
+    path.startsWith('https://') ||
+    path.startsWith('data:') ||
+    path.startsWith('blob:')
+  ) {
+    return path;
+  }
+  const apiBase = import.meta.env.VITE_API_URL || '';
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${apiBase}${cleanPath}`;
+};
+
