@@ -135,7 +135,7 @@ class OrderItem(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
-    menu_item_id = Column(Integer, ForeignKey("menu_items.id"), nullable=False)
+    menu_item_id = Column(Integer, ForeignKey("menu_items.id"), nullable=True)
     item_name = Column(String(200), nullable=False)
     quantity = Column(Integer, default=1)
     price = Column(Float, nullable=False)

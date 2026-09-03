@@ -1,102 +1,80 @@
-"""
-File upload utilities: validation, sanitization, and storage.
-"""
-
 import os
-import uuid
 import re
+import uuid
 from pathlib import Path
+from urllib.parse import urlparse
 from fastapi import UploadFile, HTTPException
-
-# ── Configuration ─────────────────────────────────────────────
 
 UPLOAD_DIR = Path(__file__).parent.parent.parent / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)
 
-MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
+MAX_FILE_SIZE = 5 * 1024 * 1024
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
-ALLOWED_MIME_TYPES = {
-    "image/jpeg", "image/png", "image/gif", "image/webp",
-}
+ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
+BUCKET = os.getenv("SUPABASE_BUCKET", "menu-images")
+
+_client = None
+if SUPABASE_URL and SUPABASE_SERVICE_KEY:
+    from supabase import create_client
+    _client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 
 def sanitize_filename(filename: str) -> str:
-    """
-    Sanitize a filename to prevent path traversal and special characters.
-    Returns a safe filename with a UUID prefix for uniqueness.
-    """
-    # Remove path separators and null bytes
     filename = filename.replace("/", "").replace("\\", "").replace("\x00", "")
-    # Keep only alphanumeric, dots, hyphens, underscores
-    filename = re.sub(r"[^a-zA-Z0-9._-]", "_", filename)
-    # Add UUID prefix for uniqueness
-    unique_name = f"{uuid.uuid4().hex[:8]}_{filename}"
-    return unique_name
+    filename = re.sub(r"[^a-zA-Z0-9._-]", "_", filename).lower()
+    return f"{uuid.uuid4().hex[:8]}_{filename}"
 
 
 def validate_image(file: UploadFile) -> None:
-    """
-    Validate an uploaded image file.
-    Checks: file extension, MIME type, and file size.
-    """
     if not file.filename:
         raise HTTPException(status_code=400, detail="No filename provided")
-
-    # Check extension
     ext = os.path.splitext(file.filename)[1].lower()
     if ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"File type not allowed. Allowed: {', '.join(ALLOWED_EXTENSIONS)}",
-        )
-
-    # Check MIME type
+        raise HTTPException(status_code=400, detail=f"File type not allowed. Allowed: {', '.join(ALLOWED_EXTENSIONS)}")
     if file.content_type and file.content_type not in ALLOWED_MIME_TYPES:
-        raise HTTPException(
-            status_code=400,
-            detail=f"MIME type not allowed: {file.content_type}",
-        )
+        raise HTTPException(status_code=400, detail=f"MIME type not allowed: {file.content_type}")
 
 
 async def save_upload(file: UploadFile, subfolder: str = "") -> str:
-    """
-    Save an uploaded file to disk.
-    Returns the relative path to the saved file.
-    """
     validate_image(file)
 
-    # Read and check size
     content = await file.read()
     if len(content) > MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=400,
-            detail=f"File too large. Maximum size: {MAX_FILE_SIZE // (1024 * 1024)} MB",
-        )
+        raise HTTPException(status_code=400, detail=f"File too large. Maximum size: {MAX_FILE_SIZE // (1024 * 1024)} MB")
 
-    # Create subdirectory if needed
+    safe_name = sanitize_filename(file.filename)
+
+    if _client:
+        key = f"{subfolder}/{safe_name}" if subfolder else safe_name
+        _client.storage.from_(BUCKET).upload(
+            key,
+            content,
+            {"content-type": file.content_type or "image/webp", "upsert": "true"},
+        )
+        return _client.storage.from_(BUCKET).get_public_url(key)
+
     save_dir = UPLOAD_DIR / subfolder if subfolder else UPLOAD_DIR
     save_dir.mkdir(parents=True, exist_ok=True)
-
-    # Sanitize and save
-    safe_name = sanitize_filename(file.filename)
-    file_path = save_dir / safe_name
-    with open(file_path, "wb") as f:
+    with open(save_dir / safe_name, "wb") as f:
         f.write(content)
-
-    # Return relative path for storage
-    relative_path = f"/uploads/{subfolder}/{safe_name}" if subfolder else f"/uploads/{safe_name}"
-    return relative_path
+    return f"/uploads/{subfolder}/{safe_name}" if subfolder else f"/uploads/{safe_name}"
 
 
 def delete_upload(file_path: str) -> bool:
-    """Delete an uploaded file. Returns True if deleted."""
     if not file_path:
         return False
 
-    # Strip leading slash and construct full path
-    clean_path = file_path.lstrip("/")
-    full_path = Path(__file__).parent.parent.parent / clean_path
+    if file_path.startswith("http"):
+        if not _client or f"/{BUCKET}/" not in file_path:
+            return False
+        key = urlparse(file_path).path.split(f"/{BUCKET}/", 1)[-1]
+        _client.storage.from_(BUCKET).remove([key])
+        return True
 
+    full_path = Path(__file__).parent.parent.parent / file_path.lstrip("/")
     if full_path.exists() and full_path.is_file():
         full_path.unlink()
         return True

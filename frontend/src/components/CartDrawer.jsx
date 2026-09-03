@@ -111,8 +111,9 @@ export default function CartDrawer({ isOpen, onClose, cart, onAdd, onRemove, onC
                   razorpay_payment_id: response.razorpay_payment_id,
                   razorpay_signature: response.razorpay_signature,
                 });
-              } catch {
-                toast.error('Failed to complete order after payment');
+              } catch (err) {
+                console.error('Failed to complete order after payment:', err);
+                toast.error(err.response?.data?.detail || 'Failed to complete order after payment');
               } finally {
                 setPlacing(false);
               }

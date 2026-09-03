@@ -22,15 +22,25 @@ IMAGE_MAP = {
     "palak paneer": "/uploads/menu/8b492783_palak_paneer.webp",
     "paneer masala": "/uploads/menu/a669c3f9_paneer_butter_masala_1773818258.webp",
     "butter masala": "/uploads/menu/a669c3f9_paneer_butter_masala_1773818258.webp",
+    "butter chicken": "/uploads/menu/butter_chicken.jpg",
+    "malai tikka": "/uploads/menu/chicken_malai_tikka.jpg",
+    "chicken tikka": "/uploads/menu/chicken_malai_tikka.jpg",
+    "chicken roll": "/uploads/menu/d79cc347_chicken_roll.webp",
+    "roll": "/uploads/menu/d79cc347_chicken_roll.webp",
+    "rogan josh": "/uploads/menu/mutton_rogan_josh.jpg",
+    "mutton": "/uploads/menu/mutton_rogan_josh.jpg",
     "biryani": "/uploads/menu/e71b3fd4_veg_biryani.webp",
     "butter naan": "/uploads/menu/e6446f2e_butter_naan.webp",
     "garlic naan": "/uploads/menu/bfc509f8_garlic_naan.webp",
     "paratha": "/uploads/menu/21ed7f57_Lacha_Paratha.jpg",
     "gulab jamun": "/uploads/menu/445b1e82_gulab_jamun.webp",
     "rasmalai": "/uploads/menu/e2c77900_rasmalai.jpg",
+    "chai": "/uploads/menu/masala_chai.jpg",
+    "tea": "/uploads/menu/masala_chai.jpg",
     "lassi": "/uploads/menu/8eadab44_mango_lassi.webp",
     "lime soda": "/uploads/menu/80aab30f_fresh_lime_soda.webp",
 }
+
 
 
 @router.get("/menu/{slug}")
@@ -78,6 +88,8 @@ def get_public_menu(slug: str, db: Session = Depends(get_db)):
                     if key in item_lower:
                         item.image = img_path
                         break
+                if not item.image:
+                    item.image = "/uploads/menu/butter_chicken.jpg" if not item.is_veg else "/uploads/menu/6d1d869a_Paneer_tikka.webp"
         try:
             db.commit()
         except Exception:

@@ -1,6 +1,6 @@
 import requests
 
-BASE = 'http://localhost:8000/api'
+BASE = 'http://127.0.0.1:8000/api'
 print('=== RUNNING COMPREHENSIVE BACKEND AUDIT ===')
 
 # 1. Health

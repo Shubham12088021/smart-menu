@@ -132,12 +132,18 @@ def place_order(data: OrderCreate, db: Session = Depends(get_db)):
 
     # Add order items
     for item_data in data.items:
+        valid_menu_item_id = None
+        if item_data.menu_item_id:
+            exists = db.query(MenuItem).filter(MenuItem.id == item_data.menu_item_id).first()
+            if exists:
+                valid_menu_item_id = item_data.menu_item_id
+
         order_item = OrderItem(
             order_id=order.id,
-            menu_item_id=item_data.menu_item_id,
-            item_name=item_data.item_name,
-            quantity=item_data.quantity,
-            price=item_data.price,
+            menu_item_id=valid_menu_item_id,
+            item_name=item_data.item_name or "Menu Item",
+            quantity=max(1, item_data.quantity or 1),
+            price=float(item_data.price or 0.0),
         )
         db.add(order_item)
 
