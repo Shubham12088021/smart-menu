@@ -14,6 +14,25 @@ from app.schemas.schemas import AnalyticsEvent
 router = APIRouter(prefix="/api/public", tags=["Public Menu"])
 
 
+IMAGE_MAP = {
+    "crispy corn": "/uploads/menu/b47b891e_crispy_corn.jpg",
+    "paneer tikka": "/uploads/menu/6d1d869a_Paneer_tikka.webp",
+    "spring roll": "/uploads/menu/c311a8ff_veg_spring_rolls.webp",
+    "dal makhani": "/uploads/menu/6cd07bf2_dal_makhani.webp",
+    "palak paneer": "/uploads/menu/8b492783_palak_paneer.webp",
+    "paneer masala": "/uploads/menu/a669c3f9_paneer_butter_masala_1773818258.webp",
+    "butter masala": "/uploads/menu/a669c3f9_paneer_butter_masala_1773818258.webp",
+    "biryani": "/uploads/menu/e71b3fd4_veg_biryani.webp",
+    "butter naan": "/uploads/menu/e6446f2e_butter_naan.webp",
+    "garlic naan": "/uploads/menu/bfc509f8_garlic_naan.webp",
+    "paratha": "/uploads/menu/21ed7f57_Lacha_Paratha.jpg",
+    "gulab jamun": "/uploads/menu/445b1e82_gulab_jamun.webp",
+    "rasmalai": "/uploads/menu/e2c77900_rasmalai.jpg",
+    "lassi": "/uploads/menu/8eadab44_mango_lassi.webp",
+    "lime soda": "/uploads/menu/80aab30f_fresh_lime_soda.webp",
+}
+
+
 @router.get("/menu/{slug}")
 def get_public_menu(slug: str, db: Session = Depends(get_db)):
     """
@@ -51,6 +70,19 @@ def get_public_menu(slug: str, db: Session = Depends(get_db)):
             .order_by(MenuItem.display_order)
             .all()
         )
+        # Auto-link images
+        for item in items:
+            if not item.image:
+                item_lower = item.name.lower()
+                for key, img_path in IMAGE_MAP.items():
+                    if key in item_lower:
+                        item.image = img_path
+                        break
+        try:
+            db.commit()
+        except Exception:
+            pass
+
         categories_data.append({
             "id": cat.id,
             "name": cat.name,

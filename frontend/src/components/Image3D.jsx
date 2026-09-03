@@ -34,7 +34,6 @@ export default function Image3D({
   onAddToCart = null,
 }) {
   const containerRef = useRef(null);
-  const [imgError, setImgError] = useState(false);
 
   // Resolve absolute backend URL if relative path
   const finalSrc = getImageUrl(src);
@@ -416,8 +415,8 @@ export default function Image3D({
     )
   ) : null;
 
-  if ((!src || imgError) && fallback) {
-    return fallback;
+  if (!src) {
+    return fallback || null;
   }
 
   return (
@@ -445,7 +444,6 @@ export default function Image3D({
             alt={alt}
             className={`image-3d-img ${imgClassName}`}
             draggable={false}
-            onError={() => setImgError(true)}
           />
 
           {glare && (
