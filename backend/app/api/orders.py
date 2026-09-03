@@ -118,14 +118,14 @@ def place_order(data: OrderCreate, db: Session = Depends(get_db)):
     order = Order(
         restaurant_id=restaurant.id,
         customer_name=data.customer_name or "Guest",
-        table_number=data.table_number,
+        table_number=data.table_number or "",
         total=round(total, 2),
         status="pending",
         payment_method=data.payment_method or "cash",
         payment_status=payment_status,
         razorpay_order_id=data.razorpay_order_id or "",
         razorpay_payment_id=data.razorpay_payment_id or "",
-        notes=data.notes,
+        notes=data.notes or "",
     )
     db.add(order)
     db.flush()

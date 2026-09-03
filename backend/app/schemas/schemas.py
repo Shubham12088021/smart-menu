@@ -195,15 +195,15 @@ class OrderItemResponse(BaseModel):
 class OrderResponse(BaseModel):
     id: int
     restaurant_id: int
-    customer_name: str
-    table_number: str
+    customer_name: Optional[str] = "Guest"
+    table_number: Optional[str] = ""
     total: float
     status: str
     payment_method: Optional[str] = "cash"
     payment_status: Optional[str] = "pending"
     razorpay_order_id: Optional[str] = ""
     razorpay_payment_id: Optional[str] = ""
-    notes: str
+    notes: Optional[str] = ""
     created_at: Optional[datetime] = None
     items: List[OrderItemResponse] = []
 
