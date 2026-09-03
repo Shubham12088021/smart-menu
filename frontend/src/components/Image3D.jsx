@@ -247,7 +247,7 @@ export default function Image3D({
               <div className="dish-3d-face dish-3d-front">
                 <div className="dish-3d-img-container">
                   <img
-                    src={src}
+                    src={finalSrc}
                     alt={resolvedName}
                     className="dish-3d-hero-img"
                     draggable={false}
@@ -355,51 +355,59 @@ export default function Image3D({
             </div>
           </div>
 
-          {/* ── Floating Controls HUD ────────────────────── */}
-          <div className="dish-3d-hud animate-slide-up">
-            <div className="flex items-center gap-2">
-              {/* Auto-Rotate Toggle */}
+          {/* Bottom Toolbar Controls */}
+          <div className="dish-3d-window-footer">
+            <div className="flex items-center gap-2.5 flex-wrap justify-center">
+              {/* Auto Orbit Toggle */}
               <button
                 onClick={() => setIsAutoRotate(!isAutoRotate)}
                 className={`dish-3d-control-btn ${isAutoRotate ? 'active' : ''}`}
-                title="Toggle Auto 360° Spin"
+                title="Toggle continuous 3D rotation"
               >
                 <Rotate3d className="w-4 h-4" />
-                <span>{isAutoRotate ? 'Auto Spin: ON' : 'Auto Spin: OFF'}</span>
+                <span>{isAutoRotate ? '360° Auto Spin' : 'Start Auto Spin'}</span>
               </button>
 
-              {/* Flip Recipe Card */}
+              {/* Flip Card */}
               <button
                 onClick={() => setIsFlipped(!isFlipped)}
                 className={`dish-3d-control-btn ${isFlipped ? 'active' : ''}`}
-                title="Flip to see details"
+                title="Flip to dish info"
               >
                 <Info className="w-4 h-4" />
-                <span>{isFlipped ? 'Show Front' : 'Dish Info'}</span>
+                <span>{isFlipped ? 'Show 3D View' : 'Dish Details'}</span>
               </button>
-            </div>
 
-            <div className="flex items-center gap-2">
               {/* Zoom Controls */}
-              <div className="flex items-center bg-white/10 rounded-2xl p-1 border border-white/15">
+              <div className="flex items-center gap-1 bg-white/10 p-1 rounded-xl border border-white/10">
                 <button
-                  onClick={() => setZoomLevel(prev => Math.max(0.7, prev - 0.15))}
-                  className="p-1.5 hover:bg-white/20 rounded-xl transition-colors text-white"
+                  onClick={() => setZoomLevel(prev => Math.max(0.8, prev - 0.15))}
+                  className="dish-3d-icon-btn"
                   title="Zoom Out"
                 >
                   <Minus className="w-3.5 h-3.5" />
                 </button>
-                <span className="text-[11px] font-bold text-white px-2">
+                <span className="text-[11px] font-bold text-gray-300 px-1.5">
                   {Math.round(zoomLevel * 100)}%
                 </span>
                 <button
-                  onClick={() => setZoomLevel(prev => Math.min(1.8, prev + 0.15))}
-                  className="p-1.5 hover:bg-white/20 rounded-xl transition-colors text-white"
+                  onClick={() => setZoomLevel(prev => Math.min(1.4, prev + 0.15))}
+                  className="dish-3d-icon-btn"
                   title="Zoom In"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
               </div>
+
+              {/* Reset Angle */}
+              <button
+                onClick={reset3D}
+                className="dish-3d-control-btn"
+                title="Reset 3D camera"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Reset</span>
+              </button>
             </div>
           </div>
         </div>
