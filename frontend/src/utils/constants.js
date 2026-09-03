@@ -99,7 +99,13 @@ export const getImageUrl = (path) => {
   ) {
     return path;
   }
-  const apiBase = import.meta.env.VITE_API_URL || '';
+  const isLocal = typeof window !== 'undefined' && 
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+  const PROD_BACKEND_URL = 'https://smart-menu-backend-8ncq.onrender.com';
+  let apiBase = import.meta.env.VITE_API_URL || (isLocal ? '' : PROD_BACKEND_URL);
+  apiBase = apiBase.replace(/\/api\/?$/, '').replace(/\/$/, '');
+
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   return `${apiBase}${cleanPath}`;
 };

@@ -1,10 +1,16 @@
 import axios from 'axios';
 
-// In production, VITE_API_URL points to the deployed backend (e.g. https://smart-menu-api.onrender.com)
-// In local dev, falls back to '/api' which Vite proxies to localhost:8000
+// Smart Auto-detection:
+// - Locally (localhost): Uses '/api' (Vite proxy to localhost:8000)
+// - Deployed (Vercel): Uses Render backend URL automatically
+const isLocal = typeof window !== 'undefined' && 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+const PROD_BACKEND_URL = 'https://smart-menu-backend-8ncq.onrender.com';
+
 const API_BASE = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL}/api`
-  : '/api';
+  ? `${import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '')}/api`
+  : (isLocal ? '/api' : `${PROD_BACKEND_URL}/api`);
 
 // Create axios instance with base configuration
 const api = axios.create({
