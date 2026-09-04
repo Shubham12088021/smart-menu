@@ -6,12 +6,16 @@ These endpoints are accessed by customers scanning QR codes.
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
+from pathlib import Path
 
 from app.database.database import get_db
 from app.models.models import Restaurant, Category, MenuItem, Analytics
 from app.schemas.schemas import AnalyticsEvent
 
 router = APIRouter(prefix="/api/public", tags=["Public Menu"])
+
+uploads_dir = Path(__file__).parent.parent.parent / "uploads"
+
 
 
 IMAGE_MAP = {
@@ -80,15 +84,25 @@ def get_public_menu(slug: str, db: Session = Depends(get_db)):
             .order_by(MenuItem.display_order)
             .all()
         )
-        # Auto-link images
+        # Auto-link and repair invalid images
         for item in items:
+            needs_repair = False
             if not item.image:
+                needs_repair = True
+            elif not (item.image.startswith("http://") or item.image.startswith("https://")):
+                clean_rel = item.image.replace("/api/uploads", "").replace("/uploads", "").strip("/")
+                if not (uploads_dir / clean_rel).is_file():
+                    needs_repair = True
+
+            if needs_repair:
                 item_lower = item.name.lower()
+                matched = False
                 for key, img_path in IMAGE_MAP.items():
                     if key in item_lower:
                         item.image = img_path
+                        matched = True
                         break
-                if not item.image:
+                if not matched:
                     item.image = "/uploads/menu/butter_chicken.jpg" if not item.is_veg else "/uploads/menu/6d1d869a_Paneer_tikka.webp"
         try:
             db.commit()

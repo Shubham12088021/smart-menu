@@ -250,6 +250,12 @@ export default function Image3D({
                     alt={resolvedName}
                     className="dish-3d-hero-img"
                     draggable={false}
+                    onError={(e) => {
+                      if (!e.currentTarget.dataset.fallback) {
+                        e.currentTarget.dataset.fallback = 'true';
+                        e.currentTarget.src = getImageUrl('/uploads/menu/6d1d869a_Paneer_tikka.webp');
+                      }
+                    }}
                   />
 
                   {/* Specular Glare Reflection */}
@@ -444,6 +450,12 @@ export default function Image3D({
             alt={alt}
             className={`image-3d-img ${imgClassName}`}
             draggable={false}
+            onError={(e) => {
+              if (!e.currentTarget.dataset.fallback) {
+                e.currentTarget.dataset.fallback = 'true';
+                e.currentTarget.src = getImageUrl('/uploads/menu/6d1d869a_Paneer_tikka.webp');
+              }
+            }}
           />
 
           {glare && (

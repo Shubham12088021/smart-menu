@@ -46,11 +46,14 @@ uploads_dir.mkdir(exist_ok=True)
 @app.get("/uploads/{file_path:path}")
 @app.get("/api/uploads/{file_path:path}")
 async def serve_uploaded_image(file_path: str):
-    """Serve uploaded images with case-insensitive and prefix-insensitive resolution."""
+    """Serve uploaded images with case-insensitive, hash-tolerant, and keyword-tolerant resolution."""
+    import re
     clean_path = file_path.strip("/")
     direct = uploads_dir / clean_path
     if direct.exists() and direct.is_file():
         return FileResponse(str(direct))
+
+    menu_dir = uploads_dir / "menu"
 
     # Case-insensitive resolution for Linux hosts (Render)
     try:
@@ -68,12 +71,39 @@ async def serve_uploaded_image(file_path: str):
                 current = current / part
         if current.exists() and current.is_file():
             return FileResponse(str(current))
-            
-        # Fallback: search anywhere in uploads/menu by filename
+
+        # 1. Exact filename match or suffix match in menu dir
         filename = Path(clean_path).name.lower()
-        for candidate in (uploads_dir / "menu").glob("*"):
-            if candidate.is_file() and candidate.name.lower().endswith(filename):
-                return FileResponse(str(candidate))
+        if menu_dir.exists():
+            for candidate in menu_dir.glob("*"):
+                if candidate.is_file():
+                    cand_lower = candidate.name.lower()
+                    if cand_lower == filename or cand_lower.endswith(filename):
+                        return FileResponse(str(candidate))
+
+            # 2. Match by stripping UUID/hex prefix (e.g. 7593fa8b_Paneer_tikka.webp -> paneer_tikka.webp)
+            base_name = re.sub(r'^[a-f0-9]{6,16}_', '', filename)
+            if base_name:
+                for candidate in menu_dir.glob("*"):
+                    if candidate.is_file():
+                        cand_clean = re.sub(r'^[a-f0-9]{6,16}_', '', candidate.name.lower())
+                        if cand_clean == base_name or cand_clean.endswith(base_name) or base_name in cand_clean:
+                            return FileResponse(str(candidate))
+
+            # 3. Dish keyword matching (e.g. corn, paneer, tikka, spring, naan, paratha, biryani)
+            keywords = [w for w in re.split(r'[^a-z0-9]', base_name) if len(w) >= 4 and w not in ('webp', 'jpeg', 'jpg', 'png')]
+            if keywords:
+                for candidate in menu_dir.glob("*"):
+                    if candidate.is_file():
+                        cand_lower = candidate.name.lower()
+                        if any(kw in cand_lower for kw in keywords):
+                            return FileResponse(str(candidate))
+
+            # 4. Safe default image fallback (never show broken image to customers!)
+            for default_candidate in ["6d1d869a_Paneer_tikka.webp", "butter_chicken.jpg", "b47b891e_crispy_corn.jpg"]:
+                fallback_path = menu_dir / default_candidate
+                if fallback_path.exists():
+                    return FileResponse(str(fallback_path))
     except Exception:
         pass
 
@@ -150,22 +180,36 @@ IMAGE_MAP = {
 
 
 def auto_link_menu_images(db):
-    """Auto-link existing menu images to menu items by name matching."""
+    """Auto-link existing menu images to menu items and repair broken paths across all restaurants."""
     from app.models.models import MenuItem
     try:
         items = db.query(MenuItem).all()
         updated = False
         for item in items:
+            needs_repair = False
             if not item.image:
+                needs_repair = True
+            elif not (item.image.startswith("http://") or item.image.startswith("https://")):
+                clean_rel = item.image.replace("/api/uploads", "").replace("/uploads", "").strip("/")
+                if not (uploads_dir / clean_rel).is_file():
+                    needs_repair = True
+
+            if needs_repair:
                 item_lower = item.name.lower()
+                matched = False
                 for key, img_path in IMAGE_MAP.items():
                     if key in item_lower:
                         item.image = img_path
+                        matched = True
                         updated = True
                         break
+                if not matched:
+                    item.image = "/uploads/menu/butter_chicken.jpg" if not item.is_veg else "/uploads/menu/6d1d869a_Paneer_tikka.webp"
+                    updated = True
+
         if updated:
             db.commit()
-            print("[OK] Auto-linked food images to menu items")
+            print("[OK] Auto-linked and repaired food images for all menu items")
     except Exception as e:
         print(f"Notice auto-linking images: {e}")
 
